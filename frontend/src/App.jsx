@@ -22,29 +22,29 @@ function App() {
 
   useEffect(() => {
 
-    fetch(`http://127.0.0.1:8000/stock/${selectedTicker}`)
+    fetch(`https://quantmind-production-82d4.up.railway.app/stock/${selectedTicker}`)
       .then(res => res.json())
       .then(data => setStock(data));
 
-    fetch(`http://127.0.0.1:8000/analyze/${selectedTicker}`)
+    fetch(`https://quantmind-production-82d4.up.railway.app/analyze/${selectedTicker}`)
       .then(res => res.json())
       .then(data => setAnalysis(data.analysis));
-    fetch("http://127.0.0.1:8000/market-scan")
+    fetch("https://quantmind-production-82d4.up.railway.app/market-scan")
       .then(res => res.json())
       .then(data => setScanner(data));
-    fetch(`http://127.0.0.1:8000/history/${selectedTicker}`)
+    fetch(`https://quantmind-production-82d4.up.railway.app/history/${selectedTicker}`)
       .then(res => res.json())
       .then(data => setChartData(data));
-    fetch("http://127.0.0.1:8000/portfolio")
+    fetch("https://quantmind-production-82d4.up.railway.app/portfolio")
       .then(res => res.json())
       .then(data => setPortfolio(data));
-    fetch("http://127.0.0.1:8000/portfolio-value")
+    fetch("https://quantmind-production-82d4.up.railway.app/portfolio-value")
       .then(res => res.json())
       .then(data => setPortfolioValue(data));
-    fetch(`http://127.0.0.1:8000/backtest/${selectedTicker}`)
+    fetch(`https://quantmind-production-82d4.up.railway.app/backtest/${selectedTicker}`)
       .then(res => res.json())
       .then(data => setBacktest(data));
-    fetch("http://127.0.0.1:8000/risk-analysis")
+    fetch("https://quantmind-production-82d4.up.railway.app/risk-analysis")
       .then(res => res.json())
       .then(data => setRiskData(data));
 
@@ -121,14 +121,14 @@ function App() {
                 onClick={() => {
 
                   fetch(
-                    `http://127.0.0.1:8000/buy/${selectedTicker}/1`,
+                    `https://quantmind-production-82d4.up.railway.app/buy/${selectedTicker}/1`,
                     {
                       method: "POST"
                     }
                   )
 
                   .then(() =>
-                    fetch("http://127.0.0.1:8000/portfolio")
+                    fetch("https://quantmind-production-82d4.up.railway.app/portfolio")
                   )
 
                   .then(res => res.json())
@@ -137,7 +137,7 @@ function App() {
 
                   .then(() =>
 
-                    fetch("http://127.0.0.1:8000/portfolio-value")
+                    fetch("https://quantmind-production-82d4.up.railway.app/portfolio-value")
 
                   )
 
