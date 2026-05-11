@@ -130,3 +130,98 @@ def stock_history(ticker: str):
         })
 
     return chart_data
+portfolio = {
+    "cash": 100000,
+    "holdings": {}
+}
+
+@app.get("/portfolio")
+def get_portfolio():
+
+    return portfolio
+
+@app.post("/buy/{ticker}/{amount}")
+def buy_stock(ticker: str, amount: int):
+
+    stock = yf.Ticker(ticker)
+
+    price = float(
+        stock.history(period="1d").iloc[-1]["Close"]
+    )
+
+    cost = price * amount
+
+    if portfolio["cash"] >= cost:
+
+        portfolio["cash"] -= cost
+
+        if ticker not in portfolio["holdings"]:
+
+            portfolio["holdings"][ticker] = {
+                "shares": 0,
+                "avg_price": price
+            }
+
+        portfolio["holdings"][ticker]["shares"] += amount
+
+        return {
+            "message": f"Bought {amount} shares of {ticker}",
+            "remaining_cash": portfolio["cash"]
+        }
+
+    return {
+        "error": "Insufficient funds"
+    }
+@app.get("/portfolio-value")
+def portfolio_value():
+
+    results = []
+
+    total_value = portfolio["cash"]
+
+    for ticker, holding in portfolio["holdings"].items():
+
+        stock = yf.Ticker(ticker)
+
+        current_price = float(
+            stock.history(period="1d").iloc[-1]["Close"]
+        )
+
+        shares = holding["shares"]
+
+        avg_price = holding["avg_price"]
+
+        holding_value = current_price * shares
+
+        pnl = (
+            (current_price - avg_price)
+            * shares
+        )
+
+        total_value += holding_value
+
+        results.append({
+
+            "ticker": ticker,
+
+            "shares": shares,
+
+            "avg_price": round(avg_price, 2),
+
+            "current_price": round(current_price, 2),
+
+            "holding_value": round(holding_value, 2),
+
+            "pnl": round(pnl, 2)
+
+        })
+
+    return {
+
+        "cash": round(portfolio["cash"], 2),
+
+        "total_portfolio_value": round(total_value, 2),
+
+        "holdings": results
+
+    }
