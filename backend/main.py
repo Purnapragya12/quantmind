@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import yfinance as yf
 from fastapi.middleware.cors import CORSMiddleware
-
+import pandas_ta as ta
 from ai_engine import analyze_stock
 
 app = FastAPI()
@@ -223,5 +223,90 @@ def portfolio_value():
         "total_portfolio_value": round(total_value, 2),
 
         "holdings": results
+
+    }
+@app.get("/backtest/{ticker}")
+def backtest(ticker: str):
+
+    stock = yf.Ticker(ticker)
+
+    df = stock.history(period="6mo")
+
+    # =========================
+    # INDICATORS
+    # =========================
+
+    df["SMA20"] = ta.sma(
+        df["Close"],
+        length=20
+    )
+
+    df["SMA50"] = ta.sma(
+        df["Close"],
+        length=50
+    )
+
+    # =========================
+    # SIGNALS
+    # =========================
+
+    position = 0
+
+    buy_price = 0
+
+    profit = 0
+
+    trades = []
+
+    for i in range(50, len(df)):
+
+        sma20 = df["SMA20"].iloc[i]
+        sma50 = df["SMA50"].iloc[i]
+
+        price = df["Close"].iloc[i]
+
+        date = str(df.index[i].date())
+
+        # BUY SIGNAL
+
+        if sma20 > sma50 and position == 0:
+
+            position = 1
+            buy_price = price
+
+            trades.append({
+                "date": date,
+                "action": "BUY",
+                "price": round(price, 2)
+            })
+
+        # SELL SIGNAL
+
+        elif sma20 < sma50 and position == 1:
+
+            position = 0
+
+            trade_profit = price - buy_price
+
+            profit += trade_profit
+
+            trades.append({
+                "date": date,
+                "action": "SELL",
+                "price": round(price, 2),
+                "profit": round(trade_profit, 2)
+            })
+
+    return {
+
+        "ticker": ticker,
+
+        "strategy": "SMA20/SMA50 Crossover",
+
+        "total_profit": round(profit, 2),
+
+        "total_trades": len(trades),
+
+        "trades": trades
 
     }

@@ -17,6 +17,8 @@ function App() {
   const [selectedTicker, setSelectedTicker] = useState("NVDA");
   const [portfolio, setPortfolio] = useState(null);
   const [portfolioValue, setPortfolioValue] = useState(null);
+  const [backtest, setBacktest] = useState(null);
+
   useEffect(() => {
 
     fetch(`http://127.0.0.1:8000/stock/${selectedTicker}`)
@@ -38,6 +40,9 @@ function App() {
     fetch("http://127.0.0.1:8000/portfolio-value")
       .then(res => res.json())
       .then(data => setPortfolioValue(data));
+    fetch(`http://127.0.0.1:8000/backtest/${selectedTicker}`)
+      .then(res => res.json())
+      .then(data => setBacktest(data));
 
   }, [selectedTicker]);
 
@@ -448,6 +453,121 @@ function App() {
                         ${holding.pnl}
 
                       </div>
+                    </div>
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+      {/* BACKTEST ENGINE */}
+
+      <div className="mt-12">
+
+        <h2 className="text-3xl text-cyan-300 mb-6 font-semibold">
+          Strategy Backtesting Engine
+        </h2>
+
+        <div className="bg-[#0b1120] border border-purple-700 rounded-3xl p-8">
+
+          {backtest && (
+
+            <div>
+
+              <div className="grid grid-cols-3 gap-6 mb-8">
+
+                <div className="bg-black/30 p-5 rounded-2xl">
+
+                  <div className="text-zinc-400">
+                    Strategy
+                  </div>
+
+                  <div className="text-cyan-300 mt-2">
+                    {backtest.strategy}
+                  </div>
+
+                </div>
+
+                <div className="bg-black/30 p-5 rounded-2xl">
+
+                  <div className="text-zinc-400">
+                    Total Profit
+                  </div>
+
+                  <div className={
+                    backtest.total_profit >= 0
+                    ? "text-green-400 text-2xl mt-2"
+                    : "text-red-400 text-2xl mt-2"
+                  }>
+
+                    ${backtest.total_profit}
+
+                  </div>
+
+                </div>
+
+                <div className="bg-black/30 p-5 rounded-2xl">
+
+                  <div className="text-zinc-400">
+                    Total Trades
+                  </div>
+
+                  <div className="text-yellow-400 text-2xl mt-2">
+                    {backtest.total_trades}
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div className="space-y-3 max-h-[400px] overflow-y-auto">
+
+                {backtest.trades.map((trade, index) => (
+
+                  <div
+                    key={index}
+                    className="
+                      bg-black/30
+                      rounded-xl
+                      p-4
+                      flex
+                      justify-between
+                    "
+                  >
+
+                    <div>
+                      {trade.date}
+                    </div>
+
+                    <div className={
+                      trade.action === "BUY"
+                      ? "text-green-400"
+                      : "text-red-400"
+                    }>
+
+                      {trade.action}
+
+                    </div>
+
+                    <div>
+                      ${trade.price}
+                    </div>
+
+                    <div className="text-yellow-400">
+
+                      {trade.profit
+                        ? `$${trade.profit}`
+                        : "-"
+                      }
+
                     </div>
 
                   </div>
