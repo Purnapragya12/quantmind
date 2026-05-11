@@ -18,6 +18,7 @@ function App() {
   const [portfolio, setPortfolio] = useState(null);
   const [portfolioValue, setPortfolioValue] = useState(null);
   const [backtest, setBacktest] = useState(null);
+  const [riskData, setRiskData] = useState(null);
 
   useEffect(() => {
 
@@ -43,6 +44,9 @@ function App() {
     fetch(`http://127.0.0.1:8000/backtest/${selectedTicker}`)
       .then(res => res.json())
       .then(data => setBacktest(data));
+    fetch("http://127.0.0.1:8000/risk-analysis")
+      .then(res => res.json())
+      .then(data => setRiskData(data));
 
   }, [selectedTicker]);
 
@@ -573,6 +577,97 @@ function App() {
                   </div>
 
                 ))}
+
+              </div>
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+      {/* RISK ENGINE */}
+
+      <div className="mt-12">
+
+        <h2 className="text-3xl text-cyan-300 mb-6 font-semibold">
+          Quantitative Risk Engine
+        </h2>
+
+        <div className="bg-[#0b1120] border border-red-700 rounded-3xl p-8">
+
+          {riskData && (
+
+            <div>
+
+              <div className="grid grid-cols-5 gap-5">
+
+                <div className="bg-black/30 p-5 rounded-2xl">
+
+                  <div className="text-zinc-400">
+                    Volatility
+                  </div>
+
+                  <div className="text-red-400 text-2xl mt-2">
+                    {riskData.volatility}%
+                  </div>
+
+                </div>
+
+                <div className="bg-black/30 p-5 rounded-2xl">
+
+                  <div className="text-zinc-400">
+                    Sharpe Ratio
+                  </div>
+
+                  <div className="text-cyan-400 text-2xl mt-2">
+                    {riskData.sharpe_ratio}
+                  </div>
+
+                </div>
+
+                <div className="bg-black/30 p-5 rounded-2xl">
+
+                  <div className="text-zinc-400">
+                    Max Drawdown
+                  </div>
+
+                  <div className="text-yellow-400 text-2xl mt-2">
+                    {riskData.max_drawdown}%
+                  </div>
+
+                </div>
+
+                <div className="bg-black/30 p-5 rounded-2xl">
+
+                  <div className="text-zinc-400">
+                    Risk Score
+                  </div>
+
+                  <div className="text-pink-400 text-2xl mt-2">
+                    {riskData.risk_score}
+                  </div>
+
+                </div>
+
+                <div className="bg-black/30 p-5 rounded-2xl">
+
+                  <div className="text-zinc-400">
+                    Risk Level
+                  </div>
+
+                  <div className="
+                    text-red-400
+                    text-xl
+                    mt-2
+                  ">
+
+                    {riskData.risk_level}
+
+                  </div>
+
+                </div>
 
               </div>
 

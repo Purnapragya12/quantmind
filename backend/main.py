@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import yfinance as yf
 from fastapi.middleware.cors import CORSMiddleware
 import pandas_ta as ta
+import numpy as np
 from ai_engine import analyze_stock
 
 app = FastAPI()
@@ -308,5 +309,96 @@ def backtest(ticker: str):
         "total_trades": len(trades),
 
         "trades": trades
+
+    }
+@app.get("/risk-analysis")
+def risk_analysis():
+
+    portfolio_returns = []
+
+    total_value = 0
+
+    for ticker, holding in portfolio["holdings"].items():
+
+        stock = yf.Ticker(ticker)
+
+        hist = stock.history(period="6mo")
+
+        returns = hist["Close"].pct_change().dropna()
+
+        portfolio_returns.extend(returns.tolist())
+
+        current_price = float(
+            hist["Close"].iloc[-1]
+        )
+
+        total_value += (
+            current_price
+            * holding["shares"]
+        )
+
+    if len(portfolio_returns) == 0:
+
+        return {
+            "risk_score": 0,
+            "volatility": 0,
+            "sharpe_ratio": 0,
+            "max_drawdown": 0,
+            "risk_level": "No Holdings"
+        }
+
+    returns_array = np.array(portfolio_returns)
+
+    volatility = np.std(returns_array) * 100
+
+    sharpe_ratio = (
+        np.mean(returns_array)
+        / np.std(returns_array)
+    ) * np.sqrt(252)
+
+    cumulative = np.cumprod(
+        1 + returns_array
+    )
+
+    peak = np.maximum.accumulate(cumulative)
+
+    drawdown = (
+        (cumulative - peak)
+        / peak
+    )
+
+    max_drawdown = np.min(drawdown) * 100
+
+    risk_score = (
+        volatility * 0.6
+        + abs(max_drawdown) * 0.4
+    )
+
+    # =========================
+    # RISK CLASSIFICATION
+    # =========================
+
+    if risk_score > 8:
+        risk_level = "High Risk"
+
+    elif risk_score > 4:
+        risk_level = "Moderate Risk"
+
+    else:
+        risk_level = "Low Risk"
+
+    return {
+
+        "portfolio_value": round(total_value, 2),
+
+        "volatility": round(volatility, 2),
+
+        "sharpe_ratio": round(sharpe_ratio, 2),
+
+        "max_drawdown": round(max_drawdown, 2),
+
+        "risk_score": round(risk_score, 2),
+
+        "risk_level": risk_level
 
     }
